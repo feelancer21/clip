@@ -1,0 +1,74 @@
+# Path to the Nostr private key file
+# Default: ~/.config/clip/key
+key_store_path: "/home/user/.config/clip/key"
+
+# Nostr relay URLs to publish and query events
+# Choose relays that fit your privacy and availability requirements
+relay_urls:
+  - "wss://relay.damus.io"
+  - "wss://relay.primal.net"
+  - "wss://relay.nostr.band"
+  - "wss://relay.snort.social"
+  - "wss://nos.lol"
+
+# Lightning client mode: "lnd" or "interactive"
+lnclient: "lnd"
+
+# LND configuration (required if lnclient is "lnd")
+lnd:
+  host: "localhost"
+  port: 10009
+  tls_cert_path: "/home/user/.lnd/tls.cert"
+  macaroon_path: "/home/user/.lnd/admin.macaroon"
+
+# Interactive mode configuration (required if lnclient is "interactive")
+# interactive:
+#   network: "mainnet"  # mainnet, testnet, testnet4, signet, simnet, or regtest
+#   pub_key: "03abc...def"
+
+# Node information to publish
+# All fields are optional - publish only what you want to share
+node_info:
+  # General description of your node
+  about: |-
+    High-uptime Lightning routing node operated by Example Services.
+    
+    We accept channel requests and maintain good connectivity.
+    Feel free to reach out via Nostr for coordination.
+
+  # Maximum channel size you're willing to accept (in satoshis)
+  max_channel_size_sat: 16777215
+
+  # Minimum channel size you require (in satoshis)
+  min_channel_size_sat: 100000
+
+  # Contact information (array of contact methods)
+  contact_info:
+    - type: "nostr"
+      value: "npub1example1234567890abcdef"
+      note: "Preferred contact method"
+      primary: true
+    - type: "email"
+      value: "lightning@example.com"
+    - type: "telegram"
+      value: "@example_ln"
+      note: "For urgent matters only"
+
+  # Custom key-value pairs for additional information
+  # Use this section for any node-specific policies or information
+  custom_records:
+    acceptance_policy: |-
+      We accept public channels from reliable nodes with:
+      - Good uptime history (>95%)
+      - Minimum channel size of 100k sats
+      - Balanced capacity preferred
+      
+      DM us on Nostr before opening large channels.
+    
+    closing_policy: "Cooperative close only. Will not force-close except in case of unresponsive peer or security issue."
+    
+    scheduled_maintenance: "First Monday of each month, 02:00-04:00 UTC"
+    
+    routing_policy: "Low fees for established channels. Fee adjustments announced 48h in advance."
+    
+    fee_schedule: "Base fee: 1000 msat, Fee rate: 100 ppm"
