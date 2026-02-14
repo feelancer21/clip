@@ -4,12 +4,11 @@
 
 CLIP is a proposed protocol and CLI tool for publishing and discovering verifiable Lightning Network node information over Nostr. It aims to enable Lightning node operators to share extended metadata about their nodes (contact information, policies, requirements, etc.) in a decentralized manner.
 
+For the full protocol specification, see [CLIP.md](CLIP.md).
+
 ## Table of Contents
 
 - [Problem Statement](#problem-statement)
-- [Protocol Description](#protocol-description)
-  - [Event Tags](#event-tags)
-  - [Message Types](#message-types)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
   - [Generating a Nostr Key](#generating-a-nostr-key)
@@ -34,59 +33,6 @@ Lightning Network nodes currently have limited ways to share operational informa
 - Provide arbitrary information useful for the other nodes.
 
 While it's already possible to share such information via Nostr or centralized directories, there is no standardized way to cryptographically verify that the information actually originates from the operator of a specific Lightning node. CLIP addresses this verification challenge by linking Lightning node signatures with Nostr identities.
-
-## Protocol Description
-
-CLIP uses Nostr events with kind **38171** (addressable event) to publish Lightning node information. As an addressable event, relays only need to store the most recent version for each unique combination of `d` tag and author pubkey (npub), automatically replacing older versions.
-
-### Event Tags
-
-- **`d` tag** (identifier): Unique identifier for the event
-  - For Node Announcements: `<lightning_pubkey>`
-  - For Node Info: `<kind>:<lightning_pubkey>:<network>` (e.g., `1:03abc...def:mainnet`)
-  
-- **`k` tag** (kind): CLIP message kind
-  - `0` = Node Announcement (trust anchor, requires Lightning signature)
-  - `1` = Node Info (metadata, no Lightning signature required)
-
-- **`sig` tag** (Lightning signature): Present only on Node Announcements
-  - Format: zbase32-encoded signature created by the Lightning node's identity key
-  - Signs the Nostr event ID (hex-encoded SHA256 hash of the event without the `sig` tag). This hash is computed over the event fields including the Nostr public key and the Lightning node public key (`d` tag)
-  - During verification, the signing node's public key can be recovered from the signature and compared with the public key in the `d` tag to ensure authenticity
-
-### Message Types
-
-**Node Announcement (Kind 0)** - An announcement with empty content that serves as a trust anchor for a Lightning node. This message must be signed by both the Lightning node's identity key (via the `sig` tag) and a Nostr key (standard Nostr signature). Once published, it links the Lightning node's public key to a specific Nostr public key (npub).
-
-If a new Node Announcement is published with a different Nostr key, relays will store both announcements (different author pubkeys). However, CLIP clients must only accept messages signed by the most recently announced Nostr key (determined by `created_at` timestamp), as the previous Nostr key may have been compromised. All other messages signed with the previous Nostr key must be rejected by the client.
-
-**Node Info (Kind 1)** - Contains detailed information about the Lightning node (contact info, channel policies, operational metadata, etc.). The content is structured as JSON with predefined fields to ensure consistent parsing and interpretation across different users. The `custom_records` field allows for arbitrary key-value pairs beyond the standardized fields. This message type does not require a Lightning signature and only needs to be signed by the Nostr key that was bound in the Node Announcement.
-
-Example content structure:
-```json
-{
-  "about": "Human-readable description of the node",
-  "max_channel_size_sat": 16777215,
-  "min_channel_size_sat": 40000,
-  "contact_info": [
-    {
-      "type": "nostr",
-      "value": "npub1...",
-      "note": "Primary contact method",
-      "primary": true
-    },
-    {
-      "type": "email",
-      "value": "node@example.com"
-    }
-  ],
-  "custom_records": {
-    "acceptance_policy": "Accepting all channel requests",
-    "closing_policy": "Will not force-close channels",
-    "scheduled_maintenance": "First Sunday of each month, 02:00-04:00 UTC"
-  }
-}
-```
 
 ## Installation
 
